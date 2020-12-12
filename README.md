@@ -1,1 +1,0 @@
-# Myndshft take home test
