@@ -34,3 +34,19 @@ type NewPatient struct {
 	Race         string `json:"race"`
 	Ssn          string `json:"ssn"`
 }
+
+type UpdatePatient struct {
+	FirstName    *string `json:"first_name"`
+	LastName     *string `json:"last_name"`
+	Gender       *string `json:"gender"`
+	Phone        *string `json:"phone"`
+	EmailAddress *string `json:"email_address"`
+	Address      *string `json:"address"`
+	VisitDate    *string `json:"visit_date"`
+	Diagnosis    *string `json:"diagnosis"`
+	DrugCode     *string `json:"drug_code"`
+	Notes        *string `json:"notes"`
+	NewPatient   *bool   `json:"new_patient"`
+	Race         *string `json:"race"`
+	Ssn          *string `json:"ssn"`
+}

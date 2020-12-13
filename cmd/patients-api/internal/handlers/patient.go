@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/brudnak/myndshft/internal/patient"
+	"github.com/brudnak/myndshft/internal/platform/web"
 	"github.com/go-chi/chi"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 // PatientService has handler methods for dealing with Patients
@@ -17,85 +18,73 @@ type Patient struct {
 }
 
 // List returns all patients as a list
-func (p *Patient) List(w http.ResponseWriter, r *http.Request) {
+func (p *Patient) List(w http.ResponseWriter, r *http.Request) error {
 
-	list, err := patient.List(p.DB)
+	list, err := patient.List(r.Context(), p.DB)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		p.Log.Println("error querying db", err)
-		return
+		return err
 	}
 
-	data, err := json.Marshal(list)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		p.Log.Println("error marshalling", err)
-		return
-	}
-
-	w.Header().Set("content-type", "application/json: charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write(data); err != nil {
-		p.Log.Println("error writing")
-	}
+	return web.Respond(w, list, http.StatusOK)
 }
 
 // Retrieve gives a single Patient.
-func (p *Patient) Retrieve(w http.ResponseWriter, r *http.Request) {
+func (p *Patient) Retrieve(w http.ResponseWriter, r *http.Request) error {
 
 	id := chi.URLParam(r, "id")
 
-	pat, err := patient.Retrieve(p.DB, id)
+	pat, err := patient.Retrieve(r.Context(), p.DB, id)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		p.Log.Println("error querying db", err)
-		return
+		switch err {
+		case patient.ErrNotFound:
+			return web.NewRequestError(err, http.StatusNotFound)
+		case patient.ErrInvalidID:
+			return web.NewRequestError(err, http.StatusBadRequest)
+		default:
+			return errors.Wrapf(err, "looking for patient %q", id)
+		}
 	}
 
-	data, err := json.Marshal(pat)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		p.Log.Println("error marshalling", err)
-		return
+	return web.Respond(w, pat, http.StatusOK)
+}
+
+// Update
+func (p *Patient) Update(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+
+	var update patient.UpdatePatient
+	if err := web.Decode(r, &update); err != nil {
+		return errors.Wrap(err, "decoding patient update")
 	}
 
-	w.Header().Set("content-type", "application/json: charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write(data); err != nil {
-		p.Log.Println("error writing")
+	if err := patient.Update(r.Context(), p.DB, id, update); err != nil {
+		switch err {
+		case patient.ErrNotFound:
+			return web.NewRequestError(err, http.StatusNotFound)
+		case patient.ErrInvalidID:
+			return web.NewRequestError(err, http.StatusBadRequest)
+		default:
+			return errors.Wrapf(err, "updating patient %q", id)
+		}
 	}
+
+	return web.Respond(w, nil, http.StatusNoContent)
 }
 
 // Create decode a JSON document from a POST request and create a new Patient.
-func (p *Patient) Create(w http.ResponseWriter, r *http.Request) {
+func (p *Patient) Create(w http.ResponseWriter, r *http.Request) error {
 
 	var np patient.NewPatient
-	if err := json.NewDecoder(r.Body).Decode(&np); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		p.Log.Println(err)
-		return
+	if err := web.Decode(r, &np); err != nil {
+		return err
 	}
 
-	pat, err := patient.Create(p.DB, np)
-
+	pat, err := patient.Create(r.Context(), p.DB, np)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		p.Log.Println("error querying db", err)
-		return
+		return err
 	}
 
-	data, err := json.Marshal(pat)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		p.Log.Println("error marshalling", err)
-		return
-	}
-
-	w.Header().Set("content-type", "application/json: charset=utf-8")
-	w.WriteHeader(http.StatusCreated)
-	if _, err := w.Write(data); err != nil {
-		p.Log.Println("error writing")
-	}
+	return web.Respond(w, pat, http.StatusCreated)
 }

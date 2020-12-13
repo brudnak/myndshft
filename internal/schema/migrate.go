@@ -22,7 +22,7 @@ CREATE TABLE patients
      phone                  TEXT, 
      email_address          TEXT, 
      address                TEXT, 
-     visit_date             TIMESTAMP, 
+     visit_date             TEXT, 
      diagnosis              TEXT, 
      drug_code              TEXT, 
      notes                  TEXT,
