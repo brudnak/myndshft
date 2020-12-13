@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/brudnak/myndshft/internal/patient"
+	"github.com/go-chi/chi"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -27,6 +28,33 @@ func (p *Patient) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, err := json.Marshal(list)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		p.Log.Println("error marshalling", err)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json: charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	if _, err := w.Write(data); err != nil {
+		p.Log.Println("error writing")
+	}
+}
+
+// Retrieve gives a single Patient.
+func (p *Patient) Retrieve(w http.ResponseWriter, r *http.Request) {
+
+	id := chi.URLParam(r, "id")
+
+	pat, err := patient.Retrieve(p.DB, id)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		p.Log.Println("error querying db", err)
+		return
+	}
+
+	data, err := json.Marshal(pat)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		p.Log.Println("error marshalling", err)

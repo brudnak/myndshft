@@ -19,7 +19,10 @@ import (
 
 const seeds = `
 INSERT INTO patients (patient_id, first_name, last_name, gender, phone, email_address, address, visit_date, diagnosis, drug_code, notes, new_patient, race, ssn) VALUES
-	('a2b0639f-2cc6-44b8-b97b-15d69dbb511e', 'Andrew', 'Brudnak', 'Male', '480-881-2889', 'brudnak@protonmail.com', '3925 S Garrison', '2020-01-01 00:00:01.000001+00', 'GW', '1942', 'Patient is vegan', false, 'white', '602-87-9563')
+	('5677ec19-c833-4007-a181-fc0d345d3f9a', 'Andrew', 'Brudnak', 'Male', '480-881-2889', 'brudnak@protonmail.com', '3925 S Garrison', '2020-01-01 00:00:01.000001+00', 'GW', '1942', 'Patient is vegan', false, 'white', '602-87-9563'),
+	('1f91efdb-c096-4c2b-b052-c496592ba30d', 'Russell', 'Brudnak', 'Male', '480-881-2889', 'brudnak@protonmail.com', '3925 S Garrison', '2020-01-01 00:00:01.000001+00', 'GW', '1942', 'Patient is vegan', false, 'white', '602-87-9563'),
+	('335640fc-4787-4130-b0c9-6adb167b68e6', 'Ruby', 'Brudnak', 'Female', '480-881-2889', 'brudnak@protonmail.com', '3925 S Garrison', '2020-01-01 00:00:01.000001+00', 'GW', '1942', 'Patient is vegan', false, 'white', '602-87-9563'),
+	('7dd87403-bf72-47bc-b434-7802bc0b8ecf', 'Jessica', 'Brudnak', 'Female', '480-881-2889', 'brudnak@protonmail.com', '3925 S Garrison', '2020-01-01 00:00:01.000001+00', 'GW', '1942', 'Patient is vegan', false, 'white', '602-87-9563')
 	ON CONFLICT DO NOTHING;
 `
 
