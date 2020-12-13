@@ -24,6 +24,8 @@ func main() {
 }
 
 func run() error {
+	// shadowing log
+	log := log.New(os.Stdout, "PATIENTS : ", log.LstdFlags|log.Lmicroseconds|log.Lshortfile)
 
 	// =========================================================================
 	// Configuration
@@ -86,7 +88,7 @@ func run() error {
 	// =========================================================================
 	// Start API Service
 
-	ps := handlers.Patient{DB: db}
+	ps := handlers.Patient{DB: db, Log: log}
 
 	api := http.Server{
 		Addr:         cfg.Web.Address,
