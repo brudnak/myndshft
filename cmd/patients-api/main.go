@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/brudnak/myndshft/cmd/patients-api/internal/handlers"
 	"github.com/brudnak/myndshft/internal/platform/conf"
 	"github.com/brudnak/myndshft/internal/platform/database"
@@ -17,6 +18,12 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 
 	// =========================================================================
 	// Configuration
@@ -41,12 +48,12 @@ func main() {
 		if err == conf.ErrHelpWanted {
 			usage, err := conf.Usage("PATIENTS", &cfg)
 			if err != nil {
-				log.Fatalf("error : generating config usage : %v", err)
+				return errors.Wrap(err, "generating config usage")
 			}
 			fmt.Println(usage)
-			return
+			return nil
 		}
-		log.Fatalf("error: parsing config: %s", err)
+		return errors.Wrap(err, "parsing config")
 	}
 
 	// =========================================================================
@@ -57,7 +64,7 @@ func main() {
 
 	out, err := conf.String(&cfg)
 	if err != nil {
-		log.Fatalf("error : generating config for output : %v", err)
+		return errors.Wrap(err, "generating config for output")
 	}
 	log.Printf("main : Config :\n%v\n", out)
 
@@ -72,7 +79,7 @@ func main() {
 		DisableTLS: cfg.DB.DisableTLS,
 	})
 	if err != nil {
-		log.Fatal(err)
+		return errors.Wrap(err, "opening db")
 	}
 	defer db.Close()
 
@@ -109,7 +116,7 @@ func main() {
 	// Blocking main and waiting for shutdown.
 	select {
 	case err := <-serverErrors:
-		log.Fatalf("error: listening and serving: %s", err)
+		return errors.Wrap(err, "listening and serving")
 
 	case <-shutdown:
 		log.Println("main : Start shutdown")
@@ -126,7 +133,8 @@ func main() {
 		}
 
 		if err != nil {
-			log.Fatalf("main : could not stop server gracefully : %v", err)
+			errors.Wrap(err, "graceful shutdown")
 		}
 	}
+	return nil
 }
