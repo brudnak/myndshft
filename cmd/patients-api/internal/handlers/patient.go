@@ -12,7 +12,7 @@ import (
 
 // PatientService has handler methods for dealing with Patients
 type Patient struct {
-	DB *sqlx.DB
+	DB  *sqlx.DB
 	Log *log.Logger
 }
 
@@ -63,6 +63,38 @@ func (p *Patient) Retrieve(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json: charset=utf-8")
 	w.WriteHeader(http.StatusOK)
+	if _, err := w.Write(data); err != nil {
+		p.Log.Println("error writing")
+	}
+}
+
+// Create decode a JSON document from a POST request and create a new Patient.
+func (p *Patient) Create(w http.ResponseWriter, r *http.Request) {
+
+	var np patient.NewPatient
+	if err := json.NewDecoder(r.Body).Decode(&np); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		p.Log.Println(err)
+		return
+	}
+
+	pat, err := patient.Create(p.DB, np)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		p.Log.Println("error querying db", err)
+		return
+	}
+
+	data, err := json.Marshal(pat)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		p.Log.Println("error marshalling", err)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json: charset=utf-8")
+	w.WriteHeader(http.StatusCreated)
 	if _, err := w.Write(data); err != nil {
 		p.Log.Println("error writing")
 	}

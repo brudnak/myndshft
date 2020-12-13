@@ -14,18 +14,18 @@ type App struct {
 }
 
 // NewApp knows how to construct internal state for an App.
-func NewApp(logger *log.Logger) *App  {
-	return &App {
+func NewApp(logger *log.Logger) *App {
+	return &App{
 		mux: chi.NewRouter(),
 		log: logger,
 	}
 }
 
 // Handle connects a method and URL pattern to a particular application handler.
-func (a *App) Handle(method, pattern string, fn http.HandlerFunc)  {
+func (a *App) Handle(method, pattern string, fn http.HandlerFunc) {
 	a.mux.MethodFunc(method, pattern, fn)
 }
 
-func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request)  {
+func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.mux.ServeHTTP(w, r)
 }

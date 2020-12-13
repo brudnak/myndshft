@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/brudnak/myndshft/cmd/patients-api/internal/handlers"
 	"github.com/brudnak/myndshft/internal/platform/conf"
 	"github.com/brudnak/myndshft/internal/platform/database"
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 func main() {
