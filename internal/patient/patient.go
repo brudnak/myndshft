@@ -181,3 +181,16 @@ WHERE patient_id = $1;`
 	}
 	return nil
 }
+
+func Delete(ctx context.Context, db *sqlx.DB, id string) error {
+	if _, err := uuid.Parse(id); err != nil {
+		return ErrInvalidID
+	}
+
+	const q = `DELETE FROM patients WHERE patient_id = $1`
+
+	if _, err := db.ExecContext(ctx, q, id); err != nil {
+		return errors.Wrapf(err, "deleting patient %s", id)
+	}
+	return nil
+}

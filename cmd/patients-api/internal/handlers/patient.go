@@ -88,3 +88,18 @@ func (p *Patient) Create(w http.ResponseWriter, r *http.Request) error {
 
 	return web.Respond(w, pat, http.StatusCreated)
 }
+
+func (p *Patient) Delete(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+
+	if err := patient.Delete(r.Context(), p.DB, id); err != nil {
+		switch err {
+		case patient.ErrInvalidID:
+			return web.NewRequestError(err, http.StatusBadRequest)
+		default:
+			return errors.Wrapf(err, "deleting patient %q", id)
+		}
+	}
+
+	return web.Respond(w, nil, http.StatusNoContent)
+}
