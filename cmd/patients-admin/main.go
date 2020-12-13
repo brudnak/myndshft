@@ -10,9 +10,16 @@ import (
 	"github.com/brudnak/myndshft/internal/platform/conf"
 	"github.com/brudnak/myndshft/internal/platform/database"
 	"github.com/brudnak/myndshft/internal/schema"
+	"github.com/pkg/errors"
 )
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 
 	// =========================================================================
 	// Configuration
@@ -32,10 +39,10 @@ func main() {
 		if err == conf.ErrHelpWanted {
 			usage, err := conf.Usage("PATIENTS", &cfg)
 			if err != nil {
-				log.Fatalf("main : generating usage : %v", err)
+				return errors.Wrap(err, "generating usage")
 			}
 			fmt.Println(usage)
-			return
+			return nil
 		}
 		log.Fatalf("error: parsing config: %s", err)
 	}
@@ -49,7 +56,7 @@ func main() {
 		DisableTLS: cfg.DB.DisableTLS,
 	})
 	if err != nil {
-		log.Fatalf("error: connecting to db: %s", err)
+		return errors.Wrap(err, "connecting to db")
 	}
 	defer db.Close()
 
@@ -60,7 +67,7 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("Migrations complete")
-		return
+		return nil
 
 	case "seed":
 		if err := schema.Seed(db); err != nil {
@@ -68,6 +75,8 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("Seed data complete")
-		return
+		return nil
 	}
+
+	return nil
 }
